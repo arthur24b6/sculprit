@@ -1,0 +1,42 @@
+/**
+ * @file
+ * Basic styling.
+ */
+
+body {
+  background-color: grey;
+  font-family: sans-serif;
+}
+
+#container {
+  max-width: 800px;
+  border: 1px solid #cccccc;
+  margin: 20px auto 10px auto;
+}
+
+#header {
+  background-color: white;
+  padding: 5px 20px 0px 20px;
+
+}
+
+#content {
+  background-color: white;
+  padding: 20px;
+  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+}
+
+#footer{
+  background-color: white;
+  padding: 5px 20px 5px 20px;
+  height: 20px;
+}
+
+h1 {
+
+}
+
+h2 {
+
+}
