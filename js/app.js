@@ -21,8 +21,15 @@ app = Davis(function () {
     $.each(items, function(key, value) {
       posts.push(getAPost(value));
     });
+
+    // Render the full first post.
+    var first = posts.splice(0,1);
+    var postHTML = twig({ ref: "post" }).render(first[0]);
+    $('#content').html(postHTML);
+
+    // Render the additional posts.
     var postsHTML = twig({ ref: "posts" }).render({'posts' : posts});
-    $('#content').html(postsHTML);
+    $('#content').append(postsHTML);
   });
 
   // Display a single post.

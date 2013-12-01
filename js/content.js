@@ -7,6 +7,8 @@
 /**
  * Get all the posts in the specified directory.
  *
+ * @TODO figure out sort order?
+ *
  * @returns array of post URIs
  */
 function getAllPosts(directory, type) {
@@ -17,10 +19,11 @@ function getAllPosts(directory, type) {
 
   var posts = {};
 
-  // Get the directory listing.
-  $.ajax({url: path, async: false})
+  // Get the directory listing. Note that the sorting is being done by Apache's
+  // list options. If this isn't supported on the server this won't work.
+  $.ajax({url: path, async: false, data: 'C=M;O=D'})
     .done(function(data) {
-      var items = $(data).find('li a');
+      var items = $(data).find('a');
       $(items).each(function() {
         var uri = path + '/' + $(this).attr('href');
         var extension = uri.substr((~-uri.lastIndexOf(".") >>> 0) + 2);
