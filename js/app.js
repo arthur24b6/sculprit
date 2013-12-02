@@ -55,11 +55,13 @@ app = Davis(function () {
 var postTemplate = twig({
   id: "post",
   href: "/templates/post.twig",
+  async: false
 });
 
 var postsTemplate = twig({
   id: "posts",
   href: "/templates/posts.twig",
+  async: false
 });
 
 
