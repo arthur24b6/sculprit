@@ -4,44 +4,35 @@
  */
 
 body {
-  background-color: grey;
   font-family: sans-serif;
+  background-color: #bbbbbb;
+
 }
 
 #container {
   max-width: 800px;
-  border: 1px solid #cccccc;
+  border: 1px solid #999999;
   margin: 20px auto 10px auto;
+  background-color: #ffffff;
 }
 
 #header {
-  background-color: white;
   padding: 5px 20px 0px 20px;
-
+  border-bottom: 1px solid #aaaaaa;
+  background: url("../images/bad_fish.jpg") no-repeat top right;
 }
 
 #content {
-  background-color: white;
   padding: 20px;
-  border-top: 1px solid #cccccc;
-  border-bottom: 1px solid #cccccc;
 }
 
 #content article {
-  border-top: 1px dotted #cccccc;
+  border-bottom: 1px dotted #aaaaaa;
   padding-bottom: 10px;
 }
 
 #footer{
-  background-color: white;
+  border-top: 1px solid #aaaaaa;
   padding: 5px 20px 5px 20px;
   height: 20px;
-}
-
-h1 {
-
-}
-
-h2 {
-
 }
