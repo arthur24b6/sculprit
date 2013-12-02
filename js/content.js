@@ -19,13 +19,23 @@ function getAllPosts(directory, type) {
     .done(function(data) {
       var items = $(data).find('a');
       $(items).each(function() {
+
+        // Get the modified date. Apache list the entry like this:
+        // <a href="2013-11-30-twig.md">2013-11-30-twig.md</a>      02-Dec-2013 10:20  182
+        var modified = ($(this)[0].nextSibling.nodeValue);
+        modified = $.trim(modified);
+        // Now trim the file size off the end of it.
+        modified = modified.replace(/[\s\S][0-9]*$/, '');
+        // @TODO parse into unix time stamp?
+
         // Apache writes the URLs relative to the directory.
         var uri = settings.content_directory + '/' + $(this).attr('href');
         var extension = uri.substr((~-uri.lastIndexOf(".") >>> 0) + 2);
         if (settings.content_type == extension) {
-          posts[uri] = uri;
+          posts[modified] = uri;
         }
       });
+
     });
   return posts;
 }

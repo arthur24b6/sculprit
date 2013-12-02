@@ -64,8 +64,7 @@ app = Davis(function () {
     });
 
     // Render the full first post.
-    var first = posts.splice(0,1);
-    var postHTML = twig({ ref: "post" }).render(first[0]);
+    var postHTML = twig({ ref: "post" }).render($(posts).first()[0]);
     $('#content').html(postHTML);
 
     // Render the additional posts.
