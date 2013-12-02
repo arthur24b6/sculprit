@@ -12,31 +12,21 @@
  * @returns array of post URIs
  */
 function getAllPosts(directory, type) {
-  // Path to index.
-  path = typeof path !== 'undefined' ? path : '/posts';
-  // By default look for .md files
-  type = typeof type !== 'undefined' ? type : 'md';
-
   var posts = {};
-
   // Get the directory listing. Note that the sorting is being done by Apache's
   // list options. If this isn't supported on the server this won't work.
-  $.ajax({url: path, async: false, data: 'C=M;O=D'})
+  $.ajax({url: settings.content_directory, async: false, data: 'C=M;O=D'})
     .done(function(data) {
       var items = $(data).find('a');
       $(items).each(function() {
-        var uri = path + '/' + $(this).attr('href');
+        // Apache writes the URLs relative to the directory.
+        var uri = settings.content_directory + '/' + $(this).attr('href');
         var extension = uri.substr((~-uri.lastIndexOf(".") >>> 0) + 2);
-        // Ignore the parent directory if no extension has been set.
-        if (type == '*' && uri != '/') {
-          posts[uri] = uri;
-        }
-        else if (type == extension) {
+        if (settings.content_type == extension) {
           posts[uri] = uri;
         }
       });
     });
-
   return posts;
 }
 
@@ -55,37 +45,24 @@ function getAPost(uri) {
   $.ajax({url: uri, async: false})
     .done(function(data) {
 
-      // Find the header in the markdown files that may have metadata
-      // that should be used.
-      var options = /^---([.\s\S]*?)---/igm.exec(data);
-      if (typeof options[1] !== 'undefined') {
-        // Split the options into an array.
-        options = options[1].split(/\r?\n/);
-        $.each(options, function (key, value) {
-          // Make sure that there is a value for this item.
-          if (value) {
-            // Split the item and watch for whitespace.
-            var item = value.split(/:[.|\s\S](.+)?/);
-            if (typeof item[1] !== 'undefined') {
-              // Strip start/end quotes.
-              item[1] = item[1].replace(/(^")|("$)/g, '');
+      var options = YAML.eval(data);
+      $.each(options, function(key, value) {
+        post[key] = value;
+      });
 
-              post[item[0]] = item[1];
-            }
-          }
-          post.more = '<a href="' + createAURI(uri) + '">Read more</a>';
-        });
+      // Create a read more link.
+      post.more = '<a href="' + createAURI(uri) + '">Read more</a>';
 
-        // Strip out the metadata markup from the text.
-        var regex = /---[.\S\s]*?---/igm;
-        data = data.replace(regex, '');
-      }
+      // Strip out the YAML markup from the text.
+      var regex = /---[.\S\s]*?---/igm;
+      data = data.replace(regex, '');
 
+      // Convert text to Markdown.
       var converter = new Markdown.Converter();
       post.text = converter.makeHtml(data);
     });
 
-    return post;
+  return post;
 }
 
 
@@ -99,7 +76,7 @@ function getAPost(uri) {
 function createAURI(path) {
   // Get the filename.
   var filename = path.replace(/^.*[\\\/]/, '');
-  return '/post/' + filename.substr(0, filename.lastIndexOf('.'));
+  return settings.posts_path + '/' + filename.substr(0, filename.lastIndexOf('.'));
 }
 
 
@@ -115,5 +92,5 @@ function createAURI(path) {
  */
 function getAPath(request) {
   // Right now we know that /post/ID will map to /posts/ID.md
-  return '/posts/' + request.params['post'] + '.md';
+  return settings.content_directory + '/' + request.params['post'] + '.md';
 }

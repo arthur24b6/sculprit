@@ -1,0 +1,6 @@
+title: Sculprit!
+subtitle: Javascript powered Twig templated Markdown markup.
+posts_path: /post
+content_directory: /content
+content_type: md
+default_layout: post

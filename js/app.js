@@ -4,6 +4,11 @@
  */
 
 
+// Global settings.
+var settings = $.ajax({url:'/settings/settings.yml', async: false});
+settings = YAML.eval(settings.responseText);
+
+
 /* *********************************************** */
 /* URL routing.                                    */
 /* *********************************************** */
@@ -33,10 +38,10 @@ app = Davis(function () {
   });
 
   // Display a single post.
-  this.get('/post/:post', function (req) {
+  this.get(settings.posts_path + '/:post', function (req) {
     var path = getAPath(req);
     var post = getAPost(path);
-    var postHTML = twig({ ref: "post" }).render(post);
+    var postHTML = twig({ref: 'post'}).render(post);
     $('#content').html(postHTML);
   });
 
@@ -58,10 +63,10 @@ var postsTemplate = twig({
 });
 
 
-
 /* *********************************************** */
 /* Run!                                            */
 /* *********************************************** */
+
 $(document).ready(function () {
   app.start();
 });
