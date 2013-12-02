@@ -1,9 +1,7 @@
 {% for post in posts %}
     <article>
-        <header>
-            <h2>{{ post.title }}</h2>
-        </header>
-        <p>{{ post.date|date("M j, Y @ g:i a") }} | {{ post.description }}</p>
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.date|date("M j, Y @ g:i a") }} | {{ post.description }} | {{ post.author }}</p>
         <div class="more">{{ post.more }}</div>
     </article>
 {% endfor %}

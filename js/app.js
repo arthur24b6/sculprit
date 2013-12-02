@@ -8,6 +8,42 @@
 var settings = $.ajax({url:'/settings/settings.yml', async: false});
 settings = YAML.eval(settings.responseText);
 
+/* *********************************************** */
+/* Templating.                                     */
+/* *********************************************** */
+
+// Note: for Safari and Chrome the load can't be async as the template is not
+// available when twig.render() is called.
+var postTemplate = twig({
+  id: "post",
+  href: "/templates/post.twig",
+  async: false
+});
+
+var postsTemplate = twig({
+  id: "posts",
+  href: "/templates/posts.twig",
+  async: false
+});
+
+var header = twig({
+  id: "header",
+  href: "/templates/header.twig",
+  async: false
+});
+
+var footer = twig({
+  id: "footer",
+  href: "/templates/footer.twig",
+  async: false
+});
+
+var headerHTML = twig({ ref: "header" }).render(settings);
+$('#header').html(headerHTML);
+
+var footerHTML = twig({ ref: "footer" }).render(settings);
+$('#footer').html(footerHTML);
+
 
 /* *********************************************** */
 /* URL routing.                                    */
@@ -45,23 +81,6 @@ app = Davis(function () {
     $('#content').html(postHTML);
   });
 
-});
-
-
-/* *********************************************** */
-/* Templating.                                     */
-/* *********************************************** */
-
-var postTemplate = twig({
-  id: "post",
-  href: "/templates/post.twig",
-  async: false
-});
-
-var postsTemplate = twig({
-  id: "posts",
-  href: "/templates/posts.twig",
-  async: false
 });
 
 

@@ -1,5 +1,5 @@
-title: Sculprit!
-subtitle: Javascript powered Twig templated Markdown markup.
+site_title: Sculprit!
+site_description: Javascript powered Twig templated Markdown markup.
 posts_path: /post
 content_directory: /content
 content_type: md

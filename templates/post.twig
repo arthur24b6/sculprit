@@ -1,8 +1,6 @@
-<div class="content">
+<article>
   <h2>{{ title }}</h2>
-  <div class="date">{{ date|date("M j, Y @ g:i a") }}</div>
-  <div class="user">
-    <span class="name">{{ author_link }}</span>
+  <div class="date">{{ date|date("M j, Y @ g:i a") }} | {{ author }}</div>
   </div>
   <div class="text">{{ text }}</div>
   {% if tags_display is not empty %}
@@ -14,4 +12,4 @@
   </div>
   {% endif %}
   </div>
-</div>
+</article>
