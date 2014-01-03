@@ -64,13 +64,12 @@ function getAPost(uri) {
   $.ajax({url: uri, async: false})
     .done(function(data) {
 
-      var options = YAML.eval(data);
+      // Get the configuration settings for this post.
+      var configuration = data.match(/---([.\S\s]*?)---/);
+      var options = YAML.eval(configuration[1]);
       $.each(options, function(key, value) {
         post[key] = value;
       });
-
-      // Create a read more link.
-      post.more = '<a href="' + createAURI(uri) + '">Read more</a>';
 
       // Strip out the YAML markup from the text.
       var regex = /---[.\S\s]*?---/igm;
@@ -79,6 +78,9 @@ function getAPost(uri) {
       // Convert text to Markdown.
       var converter = new Markdown.Converter();
       post.text = converter.makeHtml(data);
+      
+      // Create a read more link.
+      post.more = '<a href="' + createAURI(uri) + '">Read more</a>';
     });
 
   return post;

@@ -12,37 +12,84 @@ settings = YAML.eval(settings.responseText);
 /* Templating.                                     */
 /* *********************************************** */
 
+var templates = {};
 // Note: for Safari and Chrome the load can't be async as the template is not
 // available when twig.render() is called.
-var postTemplate = twig({
-  id: "post",
-  href: "/templates/post.twig",
-  async: false
-});
-
-var postsTemplate = twig({
+templates.postsTemplate = twig({
   id: "posts",
   href: "/templates/posts.twig",
   async: false
 });
 
-var header = twig({
+templates.header = twig({
   id: "header",
   href: "/templates/header.twig",
   async: false
 });
 
-var footer = twig({
+templates.footer = twig({
   id: "footer",
   href: "/templates/footer.twig",
   async: false
 });
+
 
 var headerHTML = twig({ ref: "header" }).render(settings);
 $('#header').html(headerHTML);
 
 var footerHTML = twig({ ref: "footer" }).render(settings);
 $('#footer').html(footerHTML);
+
+
+
+/* *********************************************** */
+/* Content templating.                             */
+/* *********************************************** */
+
+/**
+ * Utility function to get template for post.
+  *
+ * @param post
+ * @returns string
+ */
+function getPostTemplate(post) {
+  var type = (typeof post.layout !== 'undefined') ? post.layout : settings.default_layout;
+  // Load the tempalte if needed.
+  getTemplate(type);
+  return type;
+}
+
+
+/**
+ * Utility function to load templates by name.
+ *
+ * @TODO should check to see if the template file actually exists.
+ *
+ * @param {type} type
+ * @returns {undefined}
+ */
+function getTemplate(type) {
+  // Is this template defined yet?
+  if (typeof window.templates[type] === 'undefined') {
+    window.templates[type] = twig({
+      id: type,
+      href: "/templates/" + type + ".twig",
+      async: false
+    });
+  }
+}
+
+
+/**
+ * Render a single post with the correct template.
+ *
+ * @param post
+ * @returns HTML
+ */
+function renderPost(post) {
+  var template = getPostTemplate(post);
+  return twig({ ref: template }).render(post);
+}
 
 
 /* *********************************************** */
@@ -69,45 +116,47 @@ app = Davis(function () {
       }
 
       // Convert date to a sort date with a unified format.
-      // @todo support post.updated_date ?
       var date = strtotime(post.date);
-      post.sort_date = date;
+      post.date_sort = date;
+
+      // Support for updated post times.
+      if (typeof post.updated !== 'undefined') {
+        //var date = strtotime(post.updated);
+        //post.date_sort = date;
+      }
 
       posts.push(post);
     });
 
 
     // Sort the posts by the date_sort.
-    posts.sort(function(a, b) {return a.date_sort - b.date_sort});
+    posts.sort(function(a, b) { return  b.date_sort - a.date_sort });
 
     // Get the first post.
-    var featured_post = posts.slice(0,1);
+    var featured_post = posts.slice(0,1)[0];
 
     // Render the full first post.
-    var featured = twig({ ref: "post" }).render(featured_post[0]);
-    $('#content').html(featured);
-
+    $('#content').html(renderPost(featured_post));
 
     // Get the remainder of the posts.
     posts = posts.slice(1);
 
     // Render the additional posts.
     var postsHTML = twig({ ref: "posts" }).render({'posts' : posts});
-    $('#content').append(postsHTML);
+    $('#sidebar').append(postsHTML);
   });
-
-
 
 
   // Display a single post.
   this.get(settings.posts_path + '/:post', function (req) {
     var path = getAPath(req);
     var post = getAPost(path);
-    var postHTML = twig({ref: 'post'}).render(post);
-    $('#content').html(postHTML);
+    console.log(post);
+    $('#content').html(renderPost(post));
   });
 
 });
+
 
 
 /* *********************************************** */
@@ -261,10 +310,6 @@ function strtotime (text, now) {
             return false;
         }
     }
-
-    // ECMAScript 5 only
-    //if (!match.every(process))
-    //    return false;
 
     return (date.getTime() / 1000);
 }

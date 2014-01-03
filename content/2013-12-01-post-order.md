@@ -1,11 +1,15 @@
 ---
 layout: post
-title: "Post order"
-date: 2013-11-01 00:01
-description: How new posts are displayed.
-
+title: Sculprit post ordering
+date: 2014-01-01 00:05
+description: How post order is displayed.
+updated: 2014-01-02 00:01
+author: Arthur
 ---
 
-In order to display the latest posts, Sculprit reads the directory list of the **/content** directory (by default) and uses this list as the sort order of the posts (files). It would be better to use **post.date** to sort things, but for ease of implementation, modified date it is.
 
-If Apache doesn't let you do fancy indexing, it will create problems- it will then default to file created date for the sort order.
+Sculprit orders posts by post date. This date can be set in the post with the **date: YYYY-MM-DD HH:MM** attribute in the post.
+
+Sculprit will also respect **updated: YYYY-MM-DD HH:MM** attribute in the post. If neither of these attributes is present, Sculprit will rely on the file modified date that Apache reports.
+
+While the demo files have dates in their post titles these won't have any baring on the post order.
