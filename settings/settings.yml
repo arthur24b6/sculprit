@@ -1,5 +1,5 @@
 site_title: Sculprit!
-site_description: Javascript pseudo static site generator.
+site_description: A javascript based pseudo static site generator.
 posts_path: /post
 content_directory: /content
 content_type: md
