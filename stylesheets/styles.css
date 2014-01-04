@@ -13,7 +13,7 @@ fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
 article, aside, canvas, details, embed,
 figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
+menu, nav, output, ruby, #content, summary,
 time, mark, audio, video {
   margin: 0;
   padding: 0;
@@ -313,34 +313,62 @@ a.buttons:hover {
 	text-decoration: none;
 }
 
+.wrapper {
+  margin-left: auto;
+  margin-right: auto;
+}
 
-/* Section - for main page content */
+/* Content - for main page content */
 
-section {
-  width:650px;
-  float:right;
+#content {
+  max-width: 650px;
+  float: right;
   padding-bottom:50px;
 }
 
+#content #featured-wrap {
+  float: left;
+  width: 100%;
+}
+
+#content #featured {
+  margin-right: 280px;
+}
+
+#sidebar {
+  float: left;
+  margin-left: -260px;
+  width: 200px;
+  border-left: 1px solid #dddddd;
+  padding-left: 20px;
+  margin-top: 40px;
+}
 
 /* Footer */
 
 footer {
-  width:170px;
-  float:left;
+  float: left;
   position:fixed;
-  bottom:10px;
-	padding-left: 50px;
+  bottom:0px;
+  width: 100%;
+	padding-left: 10px;
+  background-color: #FBFAF7;
+  font-size: 80%;
+  border-top: 1px solid #cccccc;
+  clear: both;
 }
 
 @media print, screen and (max-width: 960px) {
 
-  div.wrapper {
-    width:auto;
-    margin:0;
+  body {
+    padding-right: 0px;
   }
 
-  header, section, footer {
+  div.wrapper {
+    width:auto;
+  }
+
+  header, #content, footer {
     float:none;
     position:static;
     width:auto;
@@ -356,9 +384,15 @@ footer {
     padding-right:320px;
   }
 
-  section {
-    padding:20px 84px 20px 50px;
+  #content {
+    max-width: none;
+    width: auto;
+    padding:20px 0px 20px 50px;
     margin:0 0 20px;
+  }
+
+  #content #featured {
+    margin-right: 280px
   }
 
   header a small {
@@ -370,21 +404,40 @@ footer {
     right:130px;
     top:84px;
   }
+
+  footer {
+    float: right;
+  }
 }
 
-@media print, screen and (max-width: 720px) {
+@media print, screen and (max-width: 769px) {
   body {
     word-wrap:break-word;
+    padding-right: 0px;
   }
 
   header {
     padding:10px 20px 0;
 		margin-right: 0;
+    width: auto;
   }
 
-	section {
-    padding:10px 0 10px 20px;
+	#content {
+    padding:0px 20px;
     margin:0 0 30px;
+  }
+
+  #content #featured {
+    margin: 0px;
+    border-bottom: 1px solid #cccccc;
+  }
+
+  #sidebar {
+    float: none;
+    width: auto;
+    border: none;
+    padding: 0px;
+    margin: 0px;
   }
 
 	footer {
@@ -400,6 +453,10 @@ footer {
 
   header ul li.download {
     display:none;
+  }
+
+  #content #featured {
+    border-bottom: 1px solid #cccccc;
   }
 
 	footer {
