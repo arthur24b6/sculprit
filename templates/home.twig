@@ -1,7 +1,16 @@
+<div id="featured-wrap">
+<div id="featured">
+  <article>
+    <h2>{{ featured.title }}</h2>
+    <div class="text">{{ featured.text }}</div>
+  </article>
+</div>
+</div>
+
 <div id="sidebar">
 {% for post in posts %}
     <article>
-        <h2>{{ post.title }}</h2>
+        <h4>{{ post.title }}</h4>
         <div class="date">
           {% if post.updated is not empty %}
           <strong>Updated: </strong>
@@ -26,8 +35,3 @@
     </article>
 {% endfor %}
 </div>
-
-<article>
-  <h2>{{ featured.title }}</h2>
-  <div class="text">{{ featured.text }}</div>
-</article>
