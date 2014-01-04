@@ -1,0 +1,33 @@
+<div id="sidebar">
+{% for post in posts %}
+    <article>
+        <h2>{{ post.title }}</h2>
+        <div class="date">
+          {% if post.updated is not empty %}
+          <strong>Updated: </strong>
+          {{ post.updated|date("M j, Y g:i a") }}
+        {% else %}
+          {{ post.date|date("M j, Y") }}
+        {% endif %}
+
+        {% if post.author is not empty %}
+          | {{ post.author }}
+        {% endif %}
+
+        </div>
+
+        {% if post.description is not empty %}
+        <div class="description">
+          {{ post.description }}
+        </div>
+        {% endif %}
+
+        <div class="more">{{ post.more }}</div>
+    </article>
+{% endfor %}
+</div>
+
+<article>
+  <h2>{{ featured.title }}</h2>
+  <div class="text">{{ featured.text }}</div>
+</article>
