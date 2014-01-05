@@ -10,10 +10,6 @@
   RewriteCond %{HTTPS} on
   RewriteRule ^ - [E=protossl:s]
 
-  # Make sure Authorization HTTP header is available to PHP
-  # even when running as CGI or FastCGI.
-  RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
   # Block access to "hidden" directories whose names begin with a period. This
   # includes directories used by version control systems such as Subversion or
   # Git to store control files. Files whose names begin with a period, as well
@@ -36,4 +32,4 @@
   RewriteCond %{REQUEST_URI} !=/favicon.ico
   RewriteRule ^ index.html [L]
 
-  </IfModule>
+</IfModule>
