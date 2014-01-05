@@ -152,7 +152,7 @@ function getAllPosts(directory, type) {
 function getAPost(uri) {
   var post = {};
 
-  $.ajax({url: uri, async: false})
+  $.ajax({url: uri, async: false, dataType: 'html'})
     .done(function(data) {
 
       // Get the configuration settings for this post.
