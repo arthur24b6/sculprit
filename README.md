@@ -1,7 +1,18 @@
-* Sculprit
+Sculprit is a javascript powered templated content system which dynamically serves markdown formatted content.
 
-Sculprit is a javascript powered static site generator. Sculprit is a thought experiment- can the duties of content rendering be handed to the client rather than compiling server side?
+You can see Sculprit in action at [http://sculprit.24b6.net/](http://sculprit.24b6.net/).
 
-Sculprit renders markdown content on client side with Twig templates.
+Sculprit is (in theory) similar to static site generators like [Sculpin](https://sculpin.io/) and [Jekyll](http://jekyllrb.com/). It takes static content written in [markdown format](http://daringfireball.net/projects/markdown/) and displays them on the web. Unlike other Sculpin or Jekyll, Sculprit relies on the client's browser to build the site.
 
-To install: clone this repository into the root of a server. You will need to make sure that Apache allows for .htaccess files to do url rewriting and directory listing. You can add new content to /content. 
+New content can simply be added as a markdown file to a [content directory](https://github.com/arthur24b6/sculprit/tree/master/content) accessible on the web. Sculprit will automatically include your new content. Individual posts can specify what [templates](https://github.com/arthur24b6/sculprit/tree/master/templates) they use. Post authors, publish dates, titles, and descriptions are all supported in the basic templates. It is straight forward to add new variables for templates.
+
+You can start using Sculprit by downloading this code into a web root and pointing your browser at it.
+
+Requirements:
+* Server must allow URL rewriting in an .htaccess file to index.html
+* Server must allow directory listings
+* Sculprit must reside in a web root
+
+
+Source code: [Sculprit](https://github.com/arthur24b6/sculprit)
+
