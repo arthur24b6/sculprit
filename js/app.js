@@ -1,18 +1,285 @@
 /**
  * @file
  * Core functionality.
+ *
+ * @TODO support non-webroot installs and hash based urls.
+ * @TODO improve template support
+ * @TODO 
  */
 
-
 // Global settings.
-var settings = $.ajax({url:'/settings/settings.yml', async: false});
+var settings = $.ajax({url: '/settings/settings.yml', async: false});
 settings = YAML.eval(settings.responseText);
+
+/**
+ * A list of content items.
+ *
+ * This provides easy chaining of operations on content.
+ */
+function List (items) {
+
+  this.items = typeof items != 'undefined' ? items : [];
+
+  /**
+   * Find an item in the list which has the property value. Returns first match.
+   *
+   * @param string key
+   *   Property to search for
+   * @param {type} value
+   *   Value of the property.
+   * @returns Item
+   */
+  this.findItemBy = function (key, value) {
+    for (item in this.items) {
+      if (typeof item.key != 'undefined') {
+        if (item.key == val) {
+          return item;
+        }
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Find items in the list which have the property value. Returns all matches.
+   *
+   * @TODO this duplicates the same method in Content - can it be used here?
+   *
+   * @param string key
+   *   Property to search for
+   * @param string value
+   *   Value of the property.
+   * @returns List
+   */
+  this.findItemsBy = function(key, value) {
+    var list = new List;
+    for (index in this.items) {
+      if (typeof this.items[index].key != 'undefined') {
+        if (this.items[index].key == value) {
+          list.items.push(this.items[index]);
+        }
+      }
+    }
+    return list;
+  };
+
+  /**
+   * Order items in the list by the propery.
+   *
+   * @TODO should probably support more than decending order.
+   *
+   * @param string key
+   * @returns List
+   */
+  this.orderBy = function(key) {
+    var list = this.items.sort(function(a, b) {
+      return  b.key - a.key;
+    });
+    return new List(list);
+  };
+}
+
+
+/**
+ * Content storage and manipulation.
+ *
+ * Provides a mechanism to fetch content, load content, and return content.
+ *
+ * @TODO should this.items be var items to prevent acccess?
+ */
+function Content () {
+  this.items = new Array;
+  var fileType = 'md';
+
+  this.init = function() {
+    this.getItemsList();
+    return this;
+  };
+
+  this.findItemBy = function (key, value) {
+    for (index in this.items) {
+      if (typeof this.items[index][key] != 'undefined') {
+        if (this.items[index][key] == value) {
+          return this.items[index];
+        }
+      }
+    }
+    return false;
+  };
+
+  this.findItemsBy = function(key, value) {
+    var list = new List;
+    for (index in this.items) {
+      if (typeof this.items[index][key] != 'undefined') {
+        if (this.items[index][key] == value) {
+          list.items.push(this.items[index]);
+        }
+      }
+    }
+    return list;
+  };
+
+
+  /**
+   * Query an Apache server to get a list of content.
+   *
+   * @TODO make this extensible to support other data sources.
+   * @returns {undefined}
+   */
+  this.getItemsList = function() {
+    var items = this.items;
+    var findItemBy = this.findItemBy;
+    $.ajax({url: settings.content_directory, async: false, data: 'C=M;O=D'})
+    .done(function(data) {
+      var listing = $(data).find('a');
+      $(listing).each(function() {
+        // Apache writes the URLs relative to the directory.
+        var path = settings.content_directory + '/' + $(this).attr('href');
+        var extension = path.substr((~-path.lastIndexOf(".") >>> 0) + 2);
+        // Does the file extension match the content type?
+        if (fileType == extension) {
+          // Get the modified date. Apache list the entry like this:
+          // <a href="2013-11-30-twig.md">2013-11-30-twig.md</a>      02-Dec-2013 10:20  182
+          var date = $(this)[0].nextSibling.nodeValue;
+          date = $.trim(date);
+          // Now trim the file size off the end of it.
+          date = $.trim(date.replace(/[\s\S][0-9]*$/, ''));
+          var id = createAnId(path);
+          if (! findItemBy('id', id)) {
+            var item = new Item({id: id, path: path, date: date});
+            items.push(item);
+          }
+        }
+      });
+    });
+  };
+
+  /**
+   * Load all items in the system.
+   *
+   * @returns {undefined}
+   */
+  this.loadItems = function() {
+    $.each(this.items, function (key, item) {
+      if (! item.loaded) {
+        item.load();
+      }
+    });
+    return this;
+  };
+
+};
+
+
+/**
+ * A single content item.
+ *
+ * @TODO document the attributes of the object.
+ */
+function Item (data) {
+  this.id = false;
+  this.loaded = false;
+  this.type = 'post';
+
+  // Date will default to the Apache (or other) listing data. If a post supplies
+  // one it will override this value.
+  this.date = false;
+
+  // Sort date is a special case to handle an item with an updated date, date,
+  // or no date.
+  this.sortDate = false;
+
+  if (typeof data != 'undefined') {
+    for (var key in data) {
+      this[key] = data[key];
+    };
+  }
+
+  /**
+   * Read and parse the file from the source.
+   *
+   * @returns this
+   */
+  this.load = function() {
+    if (this.loaded) {
+      return;
+    }
+    var item = this;
+    $.ajax({url: item.path, async: false, dataType: 'html'})
+      .done(function(data) {
+        item.url = createAURI(item);
+        item.raw = data;
+
+        // Get the configuration settings for this post.
+        var configuration = data.match(/---([.\S\s]*?)---/);
+        var options = YAML.eval(configuration[1]);
+        $.each(options, function(key, value) {
+          item[key] = value;
+        });
+
+        // Convert date to a sort date with a unified format. Apache may provide
+        // returned dates with - which brakes strtotime().
+        // @NOTE this is sort of being done above in getItemsList()
+        item.sortDate = strtotime(item.date.replace(/-/igm, ' '));
+
+        // Support for updated post times. Assumes a valid date format.
+        if (typeof item.updated != 'undefined') {
+          item.sortDate = strtotime(item.updated);
+        }
+
+        // Strip out the YAML markup from the text.
+        var regex = /---[.\S\s]*?---/igm;
+        item.text = data.replace(regex, '');
+
+        // Convert text to Markdown.
+        // @TODO this should be extensible.
+        var converter = new Markdown.Converter();
+        item.content = converter.makeHtml(item.text);
+
+        item.loaded = true;
+    });
+    return this;
+  } ;
+
+
+  /**
+   * Load a page template.
+   *
+   * @TODO how to handle if tempalte does not exist?
+   *
+   * @returns {undefined}
+   */
+  this.loadTemplate = function(){
+    // Is this template defined yet?
+    if (typeof window.templates[this.type] === 'undefined') {
+      window.templates[this.type] = twig({
+        id: this.type,
+        href: "/templates/" + this.type + ".twig",
+        async: false
+      });
+    }
+  };
+
+  /**
+   * Basic template render function.
+   *
+   * @returns string
+   */
+  this.render = function () {
+    this.loadTemplate();
+    return twig({ ref: this.type }).render(this);
+  };
+
+};
+
+
 
 /* *********************************************** */
 /* Templating.                                     */
 /* *********************************************** */
 
 var templates = {};
+
 // Note: for Safari and Chrome the load can't be async as the template is not
 // available when twig.render() is called.
 templates.home = twig({
@@ -42,169 +309,31 @@ $('body footer').html(footerHTML);
 
 
 
-/* *********************************************** */
-/* Content templating.                             */
-/* *********************************************** */
-
-/**
- * Utility function to get template for post.
-  *
- * @param post
- * @returns string
- */
-function getPostTemplate(post) {
-  var type = (typeof post.layout !== 'undefined') ? post.layout : settings.default_layout;
-  // Load the tempalte if needed.
-  getTemplate(type);
-  return type;
-}
-
-
-/**
- * Utility function to load templates by name.
- *
- * @TODO should check to see if the template file actually exists.
- *
- * @param {type} type
- * @returns {undefined}
- */
-function getTemplate(type) {
-  // Is this template defined yet?
-  if (typeof window.templates[type] === 'undefined') {
-    window.templates[type] = twig({
-      id: type,
-      href: "/templates/" + type + ".twig",
-      async: false
-    });
-  }
-}
-
-
-/**
- * Render a single post with the correct template.
- *
- * @param post
- * @returns HTML
- */
-function renderPost(post) {
-  var template = getPostTemplate(post);
-  return twig({ ref: template }).render(post);
-}
-
 
 /* *********************************************** */
 /* URL routing.                                    */
 /* *********************************************** */
 
 
-/**
- * Get all the posts in the specified directory.
- *
- * @returns array of post URIs
- */
-function getAllPosts(directory, type) {
-  var posts = {};
-  // Get the directory listing. Note that the sorting is being done by Apache's
-  // list options. If this isn't supported on the server this won't work.
-  $.ajax({url: settings.content_directory, async: false, data: 'C=M;O=D'})
-    .done(function(data) {
-      var items = $(data).find('a');
-      $(items).each(function() {
-        // Apache writes the URLs relative to the directory.
-        var uri = settings.content_directory + '/' + $(this).attr('href');
-        var extension = uri.substr((~-uri.lastIndexOf(".") >>> 0) + 2);
-
-        // Does the file extension match the content type?
-        if (settings.content_type == extension) {
-
-          // Get the modified date. Apache list the entry like this:
-          // <a href="2013-11-30-twig.md">2013-11-30-twig.md</a>      02-Dec-2013 10:20  182
-          var date = $(this)[0].nextSibling.nodeValue;
-          date = $.trim(date);
-          // Now trim the file size off the end of it.
-          date = $.trim(date.replace(/[\s\S][0-9]*$/, ''));
-
-          // Check to see if this post already exists. If so, use the URI as the
-          // key.
-          if (typeof posts[date] === 'undefined') {
-            key = date;
-          }
-          else {
-            key = uri;
-          }
-          posts[key] = uri;
-        }
-      });
-
-    });
-  return posts;
-}
-
-
-/**
- * Get a post and retun an object with body text markdown rendered.
- *
- * @TODO needs to handle tags listing correctly in the metadata of
- * posts
- *
- * @returns post
- */
-function getAPost(uri) {
-  var post = {};
-
-  $.ajax({url: uri, async: false, dataType: 'html'})
-    .done(function(data) {
-
-      // Get the configuration settings for this post.
-      var configuration = data.match(/---([.\S\s]*?)---/);
-      var options = YAML.eval(configuration[1]);
-      $.each(options, function(key, value) {
-        post[key] = value;
-      });
-
-      // Strip out the YAML markup from the text.
-      var regex = /---[.\S\s]*?---/igm;
-      data = data.replace(regex, '');
-
-      // Convert text to Markdown.
-      var converter = new Markdown.Converter();
-      post.text = converter.makeHtml(data);
-
-      // Create a read more link.
-      post.more = '<a href="' + createAURI(uri) + '">Read more</a>';
-    });
-
-  return post;
-}
-
 
 /**
  * Utility function to map a content file to a URI.
+ *
+ * @NOTE This functiona has to be unique and reversiable. Path is considered an
+ * item's unique ID so any modifications to the created path have to be
+ * reversable to find the original ID.
  *
  * @NOTE This function needs to be expanded in the future to handle
  * more complex URI structure to content, handle file extensions,
  * etc.
  */
-function createAURI(path) {
-  // Get the filename.
-  var filename = path.replace(/^.*[\\\/]/, '');
-  return settings.posts_path + '/' + filename.substr(0, filename.lastIndexOf('.'));
+function createAURI(item) {
+  return item.type + '/' + item.id;
 }
 
-
-/**
- * Utility function to map a URL request to the content file path.
- *
- * @NOTE This function needs to be expanded in the future to handle
- * more complex URI structures to content, handle file extensions,
- * etc.
- *
- * @param {type} req
- * @returns {undefined}
- */
-function getAPath(request) {
-  // Right now we know that /post/ID will map to /posts/ID.md
-  return settings.content_directory + '/' + request.params['post'] + '.md';
+function createAnId(path) {
+  var filename = path.replace(/^.*[\\\/]/, '');
+  return filename.substr(0, filename.lastIndexOf('.'));
 }
 
 
@@ -213,61 +342,30 @@ function getAPath(request) {
 /* *********************************************** */
 app = Davis(function () {
 
+  var content = new Content();
+  content.init();
+
   // Ensure that routing is loaded on page load.
   this.configure(function () {
     this.generateRequestOnPageLoad = true;
   });
 
   // Default behavior- get all posts.
-  this.get('/', function (req) {
-    var posts = [];
-    var items = getAllPosts();
-    $.each(items, function(modified, uri) {
-      // Get the individual post.
-      post = getAPost(uri);
-
-      // Build a date from the post if there is one.
-      if (typeof post.date === 'undefined') {
-        post.date = modified;
-      }
-
-      // Convert date to a sort date with a unified format.
-      var date = strtotime(post.date);
-      post.date_sort = date;
-
-      // Support for updated post times.
-      if (typeof post.updated !== 'undefined') {
-        var date = strtotime(post.updated);
-        post.date_sort = date;
-      }
-
-      posts.push(post);
-    });
-
-    // Sort the posts by the date_sort.
-    posts.sort(function(a, b) { return  b.date_sort - a.date_sort });
-
-    // Get the first post.
-    var featured_post = posts.slice(0,1)[0];
-
-    // Get the remainder of the posts.
-    posts = posts.slice(1);
+  this.get('/', function (request) {
+    var items = content.loadItems().findItemsBy('type', 'post').orderBy('sortDate');
 
     // Render the additional posts.
     var html = twig({ ref: "home" }).render({
-      'posts' : posts,
-      'featured': featured_post
+      'posts' : items.items.slice(1),
+      'featured': items.items.slice(0,1)[0]
     });
     $('#content').html(html);
   });
 
-
-  // Display a single post.
-  this.get(settings.posts_path + '/:post', function (req) {
-    var path = getAPath(req);
-    var post = getAPost(path);
-    console.log(post);
-    $('#content').html(renderPost(post));
+  // Display a single item.
+  this.get('/:type/:id', function (request) {
+    var output = content.findItemBy('id', request.params.id).load().render();
+    $('#content').html(output);
   });
 
 });

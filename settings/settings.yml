@@ -1,6 +1,5 @@
 site_title: Sculprit!
 site_description: A javascript based pseudo static site generator.
-posts_path: /post
 content_directory: /content
-content_type: md
-default_layout: post
+posts_path: /post
+footer_tag: A sculprit is an overcaffinated fish.

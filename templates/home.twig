@@ -2,7 +2,7 @@
 <div id="featured">
   <article>
     <h2>{{ featured.title }}</h2>
-    <div class="text">{{ featured.text }}</div>
+    <div class="text">{{ featured.content }}</div>
   </article>
 </div>
 </div>
@@ -31,7 +31,7 @@
         </div>
         {% endif %}
 
-        <div class="more">{{ post.more }}</div>
+        <div class="more"><a href="/{{ post.url }}">Read more</a></div>
     </article>
 {% endfor %}
 </div>
