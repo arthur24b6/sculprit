@@ -456,21 +456,25 @@ var templates = {};
 templates.home = twig({
   id: "home",
   href: settings.template_directory + "/home.twig",
+  async: false
 });
 
 templates.detail = twig({
   id: "detail",
   href: settings.template_directory + "/detail.twig",
+  async: false
 });
 
 templates.header = twig({
   id: "header",
   href: settings.template_directory + "/header.twig",
+  async: false
 });
 
 templates.footer = twig({
   id: "footer",
   href: settings.template_directory + "/footer.twig",
+  async: false
 });
 
 
