@@ -1,12 +1,12 @@
 ---
-layout: article
+type: article
 title: This is not advisable.
-date: 2014-01-04 21:06
+date: 2014-03-14 21:06
 description: This is madness I say.
 author: Arthur
 variable: New value.
 variable2: Another new value.
-
+sticky: true
 
 ---
 

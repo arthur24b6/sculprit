@@ -1,5 +1,5 @@
 ---
-layout: post
+type: post
 title: Content URLs
 date: 2014-01-01 00:05
 updated: 2014-01-03 00:05

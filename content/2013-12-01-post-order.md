@@ -1,5 +1,5 @@
 ---
-layout: post
+type: post
 title: Sculprit post ordering
 date: 2014-01-01 00:05
 description: How post order is displayed.
