@@ -1,372 +1,41 @@
 /**
- * @file
- * Core functionality.
+ * Initialize the prototype content
+ * @type Content
  *
  * @TODO support non-webroot installs and hash based urls.
- * @TODO improve template support
- * @TODO 
+ * @TODO support tool tips
+ *   Show path to content
+ *   Show template
+ *   Show render teplate
  */
 
-// Global settings.
-var settings = $.ajax({url: '/settings/settings.yml', async: false});
-settings = YAML.eval(settings.responseText);
-
-/**
- * A list of content items.
- *
- * This provides easy chaining of operations on content.
- */
-function List (items) {
-
-  this.items = typeof items != 'undefined' ? items : [];
-
-  /**
-   * Find an item in the list which has the property value. Returns first match.
-   *
-   * @param string key
-   *   Property to search for
-   * @param {type} value
-   *   Value of the property.
-   * @returns Item
-   */
-  this.findItemBy = function (key, value) {
-    for (item in this.items) {
-      if (typeof item.key != 'undefined') {
-        if (item.key == val) {
-          return item;
-        }
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Find items in the list which have the property value. Returns all matches.
-   *
-   * @TODO this duplicates the same method in Content - can it be used here?
-   *
-   * @param string key
-   *   Property to search for
-   * @param string value
-   *   Value of the property.
-   * @returns List
-   */
-  this.findItemsBy = function(key, value) {
-    var list = new List;
-    for (index in this.items) {
-      if (typeof this.items[index].key != 'undefined') {
-        if (this.items[index].key == value) {
-          list.items.push(this.items[index]);
-        }
-      }
-    }
-    return list;
-  };
-
-  /**
-   * Order items in the list by the propery.
-   *
-   * @TODO should probably support more than decending order.
-   *
-   * @param string key
-   * @returns List
-   */
-  this.orderBy = function(key) {
-    var list = this.items.sort(function(a, b) {
-      return  b.key - a.key;
-    });
-    return new List(list);
-  };
-}
+// Initialize content.
+var content = new Sculprit();
 
 
-/**
- * Content storage and manipulation.
- *
- * Provides a mechanism to fetch content, load content, and return content.
- *
- * @TODO should this.items be var items to prevent acccess?
- */
-function Content () {
-  this.items = new Array;
-  var fileType = 'md';
-
-  this.init = function() {
-    this.getItemsList();
-    return this;
-  };
-
-  this.findItemBy = function (key, value) {
-    for (index in this.items) {
-      if (typeof this.items[index][key] != 'undefined') {
-        if (this.items[index][key] == value) {
-          return this.items[index];
-        }
-      }
-    }
-    return false;
-  };
-
-  this.findItemsBy = function(key, value) {
-    var list = new List;
-    for (index in this.items) {
-      if (typeof this.items[index][key] != 'undefined') {
-        if (this.items[index][key] == value) {
-          list.items.push(this.items[index]);
-        }
-      }
-    }
-    return list;
-  };
-
-
-  /**
-   * Query an Apache server to get a list of content.
-   *
-   * @TODO make this extensible to support other data sources.
-   * @returns {undefined}
-   */
-  this.getItemsList = function() {
-    var items = this.items;
-    var findItemBy = this.findItemBy;
-    $.ajax({url: settings.content_directory, async: false, data: 'C=M;O=D'})
-    .done(function(data) {
-      var listing = $(data).find('a');
-      $(listing).each(function() {
-        // Apache writes the URLs relative to the directory.
-        var path = settings.content_directory + '/' + $(this).attr('href');
-        var extension = path.substr((~-path.lastIndexOf(".") >>> 0) + 2);
-        // Does the file extension match the content type?
-        if (fileType == extension) {
-          // Get the modified date. Apache list the entry like this:
-          // <a href="2013-11-30-twig.md">2013-11-30-twig.md</a>      02-Dec-2013 10:20  182
-          var date = $(this)[0].nextSibling.nodeValue;
-          date = $.trim(date);
-          // Now trim the file size off the end of it.
-          date = $.trim(date.replace(/[\s\S][0-9]*$/, ''));
-          var id = createAnId(path);
-          if (! findItemBy('id', id)) {
-            var item = new Item({id: id, path: path, date: date});
-            items.push(item);
-          }
-        }
-      });
-    });
-  };
-
-  /**
-   * Load all items in the system.
-   *
-   * @returns {undefined}
-   */
-  this.loadItems = function() {
-    $.each(this.items, function (key, item) {
-      if (! item.loaded) {
-        item.load();
-      }
-    });
-    return this;
-  };
-
-};
-
-
-/**
- * A single content item.
- *
- * @TODO document the attributes of the object.
- */
-function Item (data) {
-  this.id = false;
-  this.loaded = false;
-  this.type = 'post';
-
-  // Date will default to the Apache (or other) listing data. If a post supplies
-  // one it will override this value.
-  this.date = false;
-
-  // Sort date is a special case to handle an item with an updated date, date,
-  // or no date.
-  this.sortDate = false;
-
-  if (typeof data != 'undefined') {
-    for (var key in data) {
-      this[key] = data[key];
-    };
-  }
-
-  /**
-   * Read and parse the file from the source.
-   *
-   * @returns this
-   */
-  this.load = function() {
-    if (this.loaded) {
-      return;
-    }
-    var item = this;
-    $.ajax({url: item.path, async: false, dataType: 'html'})
-      .done(function(data) {
-        item.url = createAURI(item);
-        item.raw = data;
-
-        // Get the configuration settings for this post.
-        var configuration = data.match(/---([.\S\s]*?)---/);
-        var options = YAML.eval(configuration[1]);
-        $.each(options, function(key, value) {
-          item[key] = value;
-        });
-
-        // Convert date to a sort date with a unified format. Apache may provide
-        // returned dates with - which brakes strtotime().
-        // @NOTE this is sort of being done above in getItemsList()
-        item.sortDate = strtotime(item.date.replace(/-/igm, ' '));
-
-        // Support for updated post times. Assumes a valid date format.
-        if (typeof item.updated != 'undefined') {
-          item.sortDate = strtotime(item.updated);
-        }
-
-        // Strip out the YAML markup from the text.
-        var regex = /---[.\S\s]*?---/igm;
-        item.text = data.replace(regex, '');
-
-        // Convert text to Markdown.
-        // @TODO this should be extensible.
-        var converter = new Markdown.Converter();
-        item.content = converter.makeHtml(item.text);
-
-        item.loaded = true;
-    });
-    return this;
-  } ;
-
-
-  /**
-   * Load a page template.
-   *
-   * @TODO how to handle if tempalte does not exist?
-   *
-   * @returns {undefined}
-   */
-  this.loadTemplate = function(){
-    // Is this template defined yet?
-    if (typeof window.templates[this.type] === 'undefined') {
-      window.templates[this.type] = twig({
-        id: this.type,
-        href: "/templates/" + this.type + ".twig",
-        async: false
-      });
-    }
-  };
-
-  /**
-   * Basic template render function.
-   *
-   * @returns string
-   */
-  this.render = function () {
-    this.loadTemplate();
-    return twig({ ref: this.type }).render(this);
-  };
-
-};
-
-
-
-/* *********************************************** */
-/* Templating.                                     */
-/* *********************************************** */
-
-var templates = {};
-
-// Note: for Safari and Chrome the load can't be async as the template is not
-// available when twig.render() is called.
-templates.home = twig({
-  id: "home",
-  href: "/templates/home.twig",
-  async: false
-});
-
-templates.header = twig({
-  id: "header",
-  href: "/templates/header.twig",
-  async: false
-});
-
-templates.footer = twig({
-  id: "footer",
-  href: "/templates/footer.twig",
-  async: false
-});
-
-
-var headerHTML = twig({ ref: "header" }).render(settings);
-$('body header').html(headerHTML);
-
-var footerHTML = twig({ ref: "footer" }).render(settings);
-$('body footer').html(footerHTML);
-
-
-
-
-/* *********************************************** */
-/* URL routing.                                    */
-/* *********************************************** */
-
-
-
-/**
- * Utility function to map a content file to a URI.
- *
- * @NOTE This functiona has to be unique and reversiable. Path is considered an
- * item's unique ID so any modifications to the created path have to be
- * reversable to find the original ID.
- *
- * @NOTE This function needs to be expanded in the future to handle
- * more complex URI structure to content, handle file extensions,
- * etc.
- */
-function createAURI(item) {
-  return item.type + '/' + item.id;
-}
-
-function createAnId(path) {
-  var filename = path.replace(/^.*[\\\/]/, '');
-  return filename.substr(0, filename.lastIndexOf('.'));
-}
-
-
-/* *********************************************** */
-/* URL routing.                                    */
-/* *********************************************** */
 app = Davis(function () {
-
-  var content = new Content();
-  content.init();
 
   // Ensure that routing is loaded on page load.
   this.configure(function () {
     this.generateRequestOnPageLoad = true;
   });
 
+
   // Default behavior- get all posts.
   this.get('/', function (request) {
-    var items = content.loadItems().findItemsBy('type', 'post').orderBy('sortDate');
-
-    // Render the additional posts.
-    var html = twig({ ref: "home" }).render({
-      'posts' : items.items.slice(1),
-      'featured': items.items.slice(0,1)[0]
-    });
-    $('#content').html(html);
+    $('#content').html(twig({ ref: "home" }).render({})) ;
   });
 
   // Display a single item.
+  // @TODO support different kinds of detail pages.
   this.get('/:type/:id', function (request) {
-    var output = content.findItemBy('id', request.params.id).load().render();
-    $('#content').html(output);
+    // Get the requested item.
+    var item = content.findItemBy('id', request.params.id);
+    $('#content').html(twig({ ref: "detail" }).render(item));
   });
+
+  // Rerender the class based templating after every route change.
+  this.after(function () {SculpritClassRender();});
 
 });
 
@@ -377,152 +46,210 @@ app = Davis(function () {
 /* *********************************************** */
 
 $(document).ready(function () {
+  //Davis.extend(Davis.hashRouting({ prefix: "!", forceHashRouting: true }));
   app.start();
 });
 
 
+/**
+ * Search for html elements that use the templating system and insert content.
+ *
+ * An html element should implement this system in the following way:
+ * <div class="template post"></div>
+ * Which will render a single post item through the post.twig template.
+ *
+ * <div class="template posts"></div>
+ * Will render 10 post items through the teaser.twig and then through list.twig
+ *
+ * <div class="template posts--articles five"></div>
+ * Will render the first five post and article items through teaser.twig and
+ * then through list.twig.
+ */
+
+function SculpritClassRender() {
+
+// What is the class that is being used to identify the template containers?
+var className = 'sculprit';
+
+$('.' + className).each(function() {
+
+  // Strip out the selector.
+  var classes = $(this).attr('class').replace(className, '');
+  classes = $.trim(classes);
+  classes = classes.split(/\s+/);
+
+  var types = [];
+  var template = false;
+  var limit = false;
+  var filters = [];
+
+  // Break the classes down to individual class names.
+  $.each(classes, function (index, className) {
+
+    // Check to see that the type of items to return has not been set already.
+    if (types.length < 1) {
+
+      // Check to see if this is a single type of item to return.
+      if ($.inArray(className, content.getItemTypes()) !== -1) {
+        types = [className];
+        limit = 1;
+        return true;
+      }
+
+      // Check to see if this is a plural of an item type.
+      else if (isPlural(className, content.getItemTypes())) {
+        types = [isPlural(className, content.getItemTypes())];
+        // @TODO should this be the default # or should content() define that?
+        limit = 0;
+        return true;
+      }
+
+      // Check to see if there are multiple types being requested. When multiple
+      // types are passed only plurals are supported.
+      else if (className.split('--').length > 1) {
+        var names = className.split('--');
+        // These should always be plurals so test for those.
+        $.each(names, function(index, value) {
+          var itemType = isPlural(value, content.getItemTypes());
+          if (itemType) {
+            types.push(itemType);
+            // @TODO should this be the default # or should content() define that?
+            limit = 0;
+          }
+        });
+        return true;
+      }
+    }
+
+
+    // Check to see if this is a limit argument. Assumes that no CSS classes are
+    // using number names. Overrides default limits.
+    if (wordNumber(className) && ! limit ) {
+      limit = wordNumber(className);
+      return true;
+    }
+
+
+    // Check to see if this is a request for a template type. The item type(s)
+    // must be set before the template value is set.
+    if (! template && types.length > 0) {
+      if ($.inArray(className, content.getTemplateList()) !== -1) {
+        template = className;
+        return true;
+      }
+    }
+
+    // Any additional attributes to select by?
+    if (content.filters(className) ) {
+      filters.push(className);
+    }
+
+
+  });
+
+  var output = content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit).render(template);
+  $(this).html(output);
+});
+
+};
+
 
 /**
- * PHP like date handling.
+ * Utility function to check to see if a class name is a plural of an item type.
  *
- * Taken from: https://github.com/kvz/phpjs/blob/master/functions/datetime/strtotime.js
+ * @TODO this belongs in Sculprit()
+ *
+ * @param string name
+ * @param array itemTypes
+ * @returns string or boolean
  */
-function strtotime (text, now) {
-    // Convert string representation of date and time to a timestamp
-    //
-    // version: 1109.2015
-    // discuss at: http://phpjs.org/functions/strtotime
-    // +   original by: Caio Ariede (http://caioariede.com)
-    // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-    // +      input by: David
-    // +   improved by: Caio Ariede (http://caioariede.com)
-    // +   bugfixed by: Wagner B. Soares
-    // +   bugfixed by: Artur Tchernychev
-    // +   improved by: A. Matías Quezada (http://amatiasq.com)
-    // +   improved by: preuter
-    // +   improved by: Brett Zamir (http://brett-zamir.me)
-    // %        note 1: Examples all have a fixed timestamp to prevent tests to fail because of variable time(zones)
-    // *     example 1: strtotime('+1 day', 1129633200);
-    // *     returns 1: 1129719600
-    // *     example 2: strtotime('+1 week 2 days 4 hours 2 seconds', 1129633200);
-    // *     returns 2: 1130425202
-    // *     example 3: strtotime('last month', 1129633200);
-    // *     returns 3: 1127041200
-    // *     example 4: strtotime('2009-05-04 08:30:00');
-    // *     returns 4: 1241418600
-    var parsed, match, year, date, days, ranges, len, times, regex, i;
+function isPlural(name, itemTypes) {
+   var singular = name.slice(0, -1);
+   if ($.inArray(singular, itemTypes) !== -1) {
+     return singular;
+   }
+   return false;
+ }
 
-    if (!text) {
-        return null;
-    }
 
-    // Unecessary spaces
-    text = text.replace(/^\s+|\s+$/g, '')
-        .replace(/\s{2,}/g, ' ')
-        .replace(/[\t\r\n]/g, '')
-        .toLowerCase();
 
-    if (text === 'now') {
-        return now === null || isNaN(now) ? new Date().getTime() / 1000 | 0 : now | 0;
-    }
-    if (!isNaN(parsed = Date.parse(text))) {
-        return parsed / 1000 | 0;
-    }
-    if (text === 'now') {
-        return new Date().getTime() / 1000; // Return seconds, not milli-seconds
-    }
-    if (!isNaN(parsed = Date.parse(text))) {
-        return parsed / 1000;
-    }
+/**
+ * Parse word numbers into an integer.
+ *
+ * @param stringstring
+ * @returns int
+ */
+function wordNumber(string) {
+  var Small = {
+      'zero': 0,
+      'one': 1,
+      'two': 2,
+      'three': 3,
+      'four': 4,
+      'five': 5,
+      'six': 6,
+      'seven': 7,
+      'eight': 8,
+      'nine': 9,
+      'ten': 10,
+      'eleven': 11,
+      'twelve': 12,
+      'thirteen': 13,
+      'fourteen': 14,
+      'fifteen': 15,
+      'sixteen': 16,
+      'seventeen': 17,
+      'eighteen': 18,
+      'nineteen': 19,
+      'twenty': 20,
+      'thirty': 30,
+      'forty': 40,
+      'fifty': 50,
+      'sixty': 60,
+      'seventy': 70,
+      'eighty': 80,
+      'ninety': 90
+  };
 
-    match = text.match(/^(\d{2,4})-(\d{2})-(\d{2})(?:\s(\d{1,2}):(\d{2})(?::\d{2})?)?(?:\.(\d+)?)?$/);
-    if (match) {
-        year = match[1] >= 0 && match[1] <= 69 ? +match[1] + 2000 : match[1];
-        return new Date(year, parseInt(match[2], 10) - 1, match[3],
-            match[4] || 0, match[5] || 0, match[6] || 0, match[7] || 0) / 1000;
-    }
+  var Magnitude = {
+      'thousand':     1000,
+      'million':      1000000,
+      'billion':      1000000000,
+      'trillion':     1000000000000,
+      'quadrillion':  1000000000000000,
+      'quintillion':  1000000000000000000,
+      'sextillion':   1000000000000000000000,
+      'septillion':   1000000000000000000000000,
+      'octillion':    1000000000000000000000000000,
+      'nonillion':    1000000000000000000000000000000,
+      'decillion':    1000000000000000000000000000000000,
+  };
 
-    date = now ? new Date(now * 1000) : new Date();
-    days = {
-        'sun': 0,
-        'mon': 1,
-        'tue': 2,
-        'wed': 3,
-        'thu': 4,
-        'fri': 5,
-        'sat': 6
-    };
-    ranges = {
-        'yea': 'FullYear',
-        'mon': 'Month',
-        'day': 'Date',
-        'hou': 'Hours',
-        'min': 'Minutes',
-        'sec': 'Seconds'
-    };
 
-    function lastNext(type, range, modifier) {
-        var diff, day = days[range];
-
-        if (typeof day !== 'undefined') {
-            diff = day - date.getDay();
-
-            if (diff === 0) {
-                diff = 7 * modifier;
-            }
-            else if (diff > 0 && type === 'last') {
-                diff -= 7;
-            }
-            else if (diff < 0 && type === 'next') {
-                diff += 7;
-            }
-
-            date.setDate(date.getDate() + diff);
-        }
-    }
-    function process(val) {
-        var splt = val.split(' '), // Todo: Reconcile this with regex using \s, taking into account browser issues with split and regexes
-            type = splt[0],
-            range = splt[1].substring(0, 3),
-            typeIsNumber = /\d+/.test(type),
-            ago = splt[2] === 'ago',
-            num = (type === 'last' ? -1 : 1) * (ago ? -1 : 1);
-
-        if (typeIsNumber) {
-            num *= parseInt(type, 10);
-        }
-
-        if (ranges.hasOwnProperty(range) && !splt[1].match(/^mon(day|\.)?$/i)) {
-            return date['set' + ranges[range]](date['get' + ranges[range]]() + num);
-        }
-        if (range === 'wee') {
-            return date.setDate(date.getDate() + (num * 7));
-        }
-
-        if (type === 'next' || type === 'last') {
-            lastNext(type, range, num);
-        }
-        else if (!typeIsNumber) {
+  function feach(w) {
+      var x = Small[w];
+      if (x != null) {
+          g = g + x;
+      }
+      else if (w == "hundred") {
+          g = g * 100;
+      }
+      else {
+          x = Magnitude[w];
+          if (x != null) {
+              n = n + g * x
+              g = 0;
+          }
+          else {
             return false;
-        }
-        return true;
-    }
+          }
+      }
+  }
 
-    times = '(years?|months?|weeks?|days?|hours?|minutes?|min|seconds?|sec' +
-        '|sunday|sun\\.?|monday|mon\\.?|tuesday|tue\\.?|wednesday|wed\\.?' +
-        '|thursday|thu\\.?|friday|fri\\.?|saturday|sat\\.?)';
-    regex = '([+-]?\\d+\\s' + times + '|' + '(last|next)\\s' + times + ')(\\sago)?';
-
-    match = text.match(new RegExp(regex, 'gi'));
-    if (!match) {
-        return false;
-    }
-
-    for (i = 0, len = match.length; i < len; i++) {
-        if (!process(match[i])) {
-            return false;
-        }
-    }
-
-    return (date.getTime() / 1000);
+  var a, n, g;
+  a = string.toString().split(/[\s-]+/);
+  n = 0;
+  g = 0;
+  a.forEach(feach);
+  return n + g;
 }
