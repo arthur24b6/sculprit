@@ -12,43 +12,26 @@
 // Initialize content.
 var content = new Sculprit();
 
-
-app = Davis(function () {
-
-  // Ensure that routing is loaded on page load.
-  this.configure(function () {
-    this.generateRequestOnPageLoad = true;
-  });
-
-
-  // Default behavior- get all posts.
-  this.get('/', function (request) {
-    $('#content').html(twig({ ref: "home" }).render({})) ;
-  });
-
-  // Display a single item.
-  // @TODO support different kinds of detail pages.
-  this.get('/:type/:id', function (request) {
-    // Get the requested item.
-    var item = content.findItemBy('id', request.params.id);
-    $('#content').html(twig({ ref: "detail" }).render(item));
-  });
-
-  // Rerender the class based templating after every route change.
-  this.after(function () {SculpritClassRender();});
-
-});
-
-
-
 /* *********************************************** */
 /* Run!                                            */
 /* *********************************************** */
 
 $(document).ready(function () {
-  //Davis.extend(Davis.hashRouting({ prefix: "!", forceHashRouting: true }));
-  app.start();
+
+  routie('', function() {
+    $('#content').html(twig({ ref: "home" }).render({})) ;
+    SculpritClassRender();
+  });
+
+  routie(':type/:id', function(type, id) {
+    // Get the requested item.
+    var item = content.findItemBy('id', id);
+    $('#content').html(twig({ ref: "detail" }).render(item));
+    SculpritClassRender();
+  });
+
 });
+
 
 
 /**
