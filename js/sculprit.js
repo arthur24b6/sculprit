@@ -405,7 +405,7 @@ function Item (data) {
 
         // Get the configuration settings for this post.
         var configuration = data.match(/---([.\S\s]*?)---/);
-        var options = YAML.eval(configuration[1]);
+        var options = jsyaml.load(configuration[1]);
         $.each(options, function(key, value) {
           item[key] = value;
         });
@@ -413,7 +413,12 @@ function Item (data) {
         // Convert date to a sort date with a unified format. Apache may provide
         // returned dates with - which brakes strtotime().
         // @NOTE this is sort of being done above in getItemsList()
-        item.sortDate = strtotime(item.date.replace(/-/igm, ' '));
+        console.log(jsyaml.load(configuration[1]));
+        var test = item.date;
+
+        // In Chrome, the date value may have been converted to a javascript
+        // date object.
+        item.sortDate = strtotime(test.replace(/-/igm, ' '));
 
         // Support for updated post times. Assumes a valid date format.
         if (typeof item.updated != 'undefined') {
@@ -511,6 +516,7 @@ Twig.extendFilter("truncateText", function(text, count) {
 function Render (data, template) {
   var template = typeof template == 'undefined' ? data.type : template;
   loadTemplate(template);
+  console.log(twig({ref: template}));
   return twig({ref: template}).render(data);
 };
 
@@ -547,7 +553,7 @@ function loadTemplate(template) {
  * etc.
  */
 function createAURI(item) {
-  return item.type + '/' + item.id;
+  return '#' + item.type + '/' + item.id;
 }
 
 function createAnId(path) {
