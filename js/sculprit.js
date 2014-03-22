@@ -10,9 +10,8 @@
 
 // Global settings.
 var settings = {
-  content_directory: './content',
-  template_directory: './templates',
-  posts_path: '/post'
+  content_directory: window.location.pathname + 'content',
+  template_directory: window.location.pathname + 'templates',
 };
 
 
@@ -413,7 +412,6 @@ function Item (data) {
         // Convert date to a sort date with a unified format. Apache may provide
         // returned dates with - which brakes strtotime().
         // @NOTE this is sort of being done above in getItemsList()
-        console.log(jsyaml.load(configuration[1]));
         var test = item.date;
 
         // In Chrome, the date value may have been converted to a javascript
@@ -516,7 +514,6 @@ Twig.extendFilter("truncateText", function(text, count) {
 function Render (data, template) {
   var template = typeof template == 'undefined' ? data.type : template;
   loadTemplate(template);
-  console.log(twig({ref: template}));
   return twig({ref: template}).render(data);
 };
 
@@ -530,7 +527,7 @@ function loadTemplate(template) {
    if (typeof window.templates[template] == 'undefined' || window.templates[template] === null) {
     window.templates[template] = twig({
       id: template,
-      href: "/templates/" + template + ".twig",
+      href: settings.template_directory + '/' + template + ".twig",
       async: false
     });
   }
