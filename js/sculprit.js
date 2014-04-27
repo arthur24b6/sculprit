@@ -2,7 +2,6 @@
  * @file
  * Core functionality.
  *
- * @TODO support non-webroot installs and hash based urls.
  * @TODO improve template support
  * @TODO settings should be passed in.
  * @TODO implement the github
@@ -161,6 +160,7 @@ function Sculprit (mode) {
     });
     // Content has now been loaded.
     this.loaded = true;
+    $(document).trigger('sculpritReady');
   };
 
 
@@ -541,7 +541,7 @@ function loadTemplate(template) {
 /**
  * Utility function to map a content file to a URI.
  *
- * @NOTE This functiona has to be unique and reversiable. Path is considered an
+ * @NOTE This function has to be unique and reversiable. Path is considered an
  * item's unique ID so any modifications to the created path have to be
  * reversable to find the original ID.
  *
@@ -706,4 +706,105 @@ function strtotime (text, now) {
     }
 
     return (date.getTime() / 1000);
+}
+
+
+
+
+/**
+ * Utility function to check if a css class name is a plural of an item type.
+ * 
+ * @param string name
+ * @param array itemTypes
+ * @returns string or boolean
+ */
+function isPlural(name, itemTypes) {
+   var singular = name.slice(0, -1);
+   if ($.inArray(singular, itemTypes) !== -1) {
+     return singular;
+   }
+   return false;
+ }
+
+
+
+/**
+ * Parse word numbers into an integer.
+ *
+ * @param stringstring
+ * @returns int
+ */
+function wordNumber(string) {
+  var Small = {
+      'zero': 0,
+      'one': 1,
+      'two': 2,
+      'three': 3,
+      'four': 4,
+      'five': 5,
+      'six': 6,
+      'seven': 7,
+      'eight': 8,
+      'nine': 9,
+      'ten': 10,
+      'eleven': 11,
+      'twelve': 12,
+      'thirteen': 13,
+      'fourteen': 14,
+      'fifteen': 15,
+      'sixteen': 16,
+      'seventeen': 17,
+      'eighteen': 18,
+      'nineteen': 19,
+      'twenty': 20,
+      'thirty': 30,
+      'forty': 40,
+      'fifty': 50,
+      'sixty': 60,
+      'seventy': 70,
+      'eighty': 80,
+      'ninety': 90
+  };
+
+  var Magnitude = {
+      'thousand':     1000,
+      'million':      1000000,
+      'billion':      1000000000,
+      'trillion':     1000000000000,
+      'quadrillion':  1000000000000000,
+      'quintillion':  1000000000000000000,
+      'sextillion':   1000000000000000000000,
+      'septillion':   1000000000000000000000000,
+      'octillion':    1000000000000000000000000000,
+      'nonillion':    1000000000000000000000000000000,
+      'decillion':    1000000000000000000000000000000000,
+  };
+
+
+  function feach(w) {
+      var x = Small[w];
+      if (x != null) {
+          g = g + x;
+      }
+      else if (w == "hundred") {
+          g = g * 100;
+      }
+      else {
+          x = Magnitude[w];
+          if (x != null) {
+              n = n + g * x
+              g = 0;
+          }
+          else {
+            return false;
+          }
+      }
+  }
+
+  var a, n, g;
+  a = string.toString().split(/[\s-]+/);
+  n = 0;
+  g = 0;
+  a.forEach(feach);
+  return n + g;
 }
