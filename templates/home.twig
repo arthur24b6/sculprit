@@ -1,37 +1,20 @@
-<div id="featured-wrap">
-<div id="featured">
-  <article>
-    <h2>{{ featured.title }}</h2>
-    <div class="text">{{ featured.content }}</div>
-  </article>
-</div>
-</div>
+<!-- This is the default template for the initial page. -->
+<aside>
 
-<div id="sidebar">
-{% for post in posts %}
-    <article>
-        <h4>{{ post.title }}</h4>
-        <div class="date">
-          {% if post.updated is not empty %}
-          <strong>Updated: </strong>
-          {{ post.updated|date("M j, Y g:i a") }}
-        {% else %}
-          {{ post.date|date("M j, Y") }}
-        {% endif %}
+  <div class="sculprit article feature ">
+    Sidebar featured item.
+  </div>
 
-        {% if post.author is not empty %}
-          | {{ post.author }}
-        {% endif %}
+  <div class="sculprit posts three">
+    A listing of items.
+  </div>
 
-        </div>
+   <div class="sculprit posts--articles news ">
+    A listing of smaller items.
+  </div>
 
-        {% if post.description is not empty %}
-        <div class="description">
-          {{ post.description }}
-        </div>
-        {% endif %}
+</aside>
 
-        <div class="more"><a href="/{{ post.url }}">Read more</a></div>
-    </article>
-{% endfor %}
+<div class="sculprit post front">
+  Here's a featured article.
 </div>

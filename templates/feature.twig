@@ -1,0 +1,16 @@
+{# Feature for bootstrap theme #}
+<div class="jumbotron">
+  <h1>{{ title }}</h1>
+  {% if description %}<h4>{{ description }} </h4>{% endif %}
+
+  {% if img %}
+  <div class="thumbnail">
+    <img src="{{ img }}" />
+  </div>
+  {% endif %}
+
+  {{ content|truncateText(100) }}
+  <p>
+    <a class="btn btn-default" href="{{ url }}" role="button">Read more &raquo;</a>
+  </p>
+</div>

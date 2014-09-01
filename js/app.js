@@ -35,7 +35,7 @@ requirejs.config({
       "parser": "../app/parser",
 
       // Prevent caching.
-      urlArgs: "?q=A&bust=" + (new Date()).getTime() + 'as'
+      urlArgs: "?q=A&bust=" + (new Date()).getTime()
     }
 });
 

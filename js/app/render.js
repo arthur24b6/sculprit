@@ -5,53 +5,19 @@
  */
 define(['jquery', 'twig', 'config'], function ($, Twig, config) {
 
-    // Here are some default templates to get started with.
-    var templates = {
-        home : Twig.twig({
-            id: "home",
-            href: config.template_directory + "home.twig",
-            async: false
-        }),
+  // Array of all twig templates that have been loaded.
+  var templates = {};
 
-        detail : Twig.twig({
-          id: "detail",
-          href: config.template_directory + "detail.twig",
-          async: false
-        }),
-
-        header : Twig.twig({
-          id: "header",
-          href: config.template_directory + "header.twig",
-          async: false
-        }),
-
-        footer : Twig.twig({
-          id: "footer",
-          href: config.template_directory + "footer.twig",
-          async: false
-        })
-    };
-
-    /**
-     * Load a specified template.
-     *
-     * @param {type} template
-     * @returns {undefined}
-     */
-    function loadTemplate (template) {
-      if (typeof templates[template] == 'undefined' || templates[template] === null) {
-        templates[template] = Twig.twig({
-          id: template,
-          href: config.template_directory + '/' + template + ".twig",
-          async: false
-        });
-      }
-    }
-
-
-
-
-  // Provide a custom truncation filter.
+  /**
+   * Provide a custom truncation filter.
+   * @param string text
+   *   The text to truncate.
+   * @param int count
+   *   Character count to runcate at.
+   *
+   * @returns string
+   *   Truncated string.
+   */
   Twig.extendFilter("truncateText", function(text, count) {
     var singular, tooLong = text.length > count;
     // Edge case where someone enters a ridiculously long string.
@@ -63,24 +29,37 @@ define(['jquery', 'twig', 'config'], function ($, Twig, config) {
     return tooLong ? text + '&hellip;' : text;
   });
 
+  /**
+   * Load a specified template.
+   *
+   * @param  string template
+   *   Name of the template to load.
+   */
+  function loadTemplate (template) {
+    if (typeof templates[template] == 'undefined' || templates[template] === null) {
+      templates[template] = Twig.twig({
+        id: template,
+        href: config.template_directory + template + ".twig",
+        async: false
+      });
+    }
+  }
 
+  /**
+   * Basic template render function.
+   *
+   * @param object data
+   *   Data to render in the template.
+   * @param string template
+   *   Name of the template to render.
+   *
+   * @returns string
+   */
+  return function (data, template) {
+    var template = typeof template == 'undefined' ? data.type : template;
+    loadTemplate(template);
 
-    /**
-     * Basic template render function.
-     *
-     * @param object data
-     *   Data to render in the template.
-     * @param string template
-     *   Name of the template to render.
-     *
-     * @returns string
-     */
-    return function (data, template) {
-        var template = typeof template == 'undefined' ? data.type : template;
-        loadTemplate(template);
-        return Twig.twig({ref: template}).render(data);
-    };
-
-
+    return Twig.twig({ref: template}).render(data);
+  };
 
 });

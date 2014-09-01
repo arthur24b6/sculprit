@@ -1,0 +1,14 @@
+<ul class="list">
+
+{% for item in items %}
+
+    {% set classes = [] %}
+    {% if loop.first %}{% set classes = classes|merge(["first"]) %}{% endif %}
+    {% if loop.last %}{% set classes = classes|merge(["last"]) %}{% endif %}
+    {% set classes = classes|merge([cycle(['odd', 'even'], loop.index0)]) %}
+
+    <li class="{{ classes|join(" ") }}">
+   {{ item }}
+  </li>
+{% endfor %}
+</ul>

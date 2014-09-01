@@ -1,0 +1,12 @@
+{# Teaser for bootstrap theme #}
+<div class="col-6 col-sm-6 col-lg-4">
+  <h2>{{ title }}</h2>
+  {% if description %}
+    {{ description }}
+  {% else %}
+    {{ content|truncateText(80) }}
+  {% endif %}
+  <p>
+    <a class="btn btn-default" href="{{ url }}" role="button">Read more &raquo;</a>
+  </p>
+</div>

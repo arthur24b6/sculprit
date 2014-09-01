@@ -19,6 +19,10 @@
 
 define(["jquery", "sculprit", "render", "numberString"], function($, Sculprit, render, numberString) {
 
+  // Ensure that Sculprit exists.
+  if (typeof content == 'undefined') {
+    var content = Sculprit();
+  }
 
   /**
    * Parse the DOM and add content to all items.
@@ -48,11 +52,6 @@ define(["jquery", "sculprit", "render", "numberString"], function($, Sculprit, r
     if (typeof element == 'object') {
       container = element;
     }
-
-    if (typeof content == 'undefined') {
-      var content = Sculprit();
-    }
-
 
     // @TODO this selector should be definable.
     $('.sculprit', container).each(function() {
@@ -133,8 +132,9 @@ define(["jquery", "sculprit", "render", "numberString"], function($, Sculprit, r
 
       console.log('Element class: ' + $(this).attr('class'));
       console.log('Item type: ' + types +'. Filtered by: ' + filters +'. Limit to: ' + limit +'. Rendered with: ' + template + '.');
+      console.log('Content items: ');
+      console.log(content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit)).items;
       var output = content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit).render(template);
-
       $(this).html(output);
 
     });

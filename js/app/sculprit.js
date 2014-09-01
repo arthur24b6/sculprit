@@ -115,20 +115,20 @@ function Sculprit(mode) {
    * @returns boolean
    */
   sculprit.filters = function(data) {
-    var filterList = sculprit.filterList;
 
-    if (! filterList) {
+    if (sculprit.filterList.length == 0) {
       $.each(sculprit.items, function(key, value) {
-        if ($.inArray(key, filterList) == -1) {
-          filterList.push(key);
+
+        if ($.inArray(key, sculprit.filterList) == -1) {
+          sculprit.filterList.push(key);
         }
       });
     }
 
     if (typeof data == 'undefined') {
-      return filterList;
+      return sculprit.filterList;
     }
-    if ($.inArray(data, filterList)) {
+    if ($.inArray(data, sculprit.filterList)) {
       return true;
     }
 
@@ -306,7 +306,7 @@ function Sculprit(mode) {
    *
    * @TODO shouldn't this stuff be in the renderer?
    *
-   * @param {type} template
+   * @param string template
    * @returns {List.renderList.list|List}
    */
   sculprit.render = function(template) {
@@ -328,14 +328,14 @@ function Sculprit(mode) {
     // Multiple items
     else {
       var items = new Array;
+      // @TODO default template should probably be configurable.
       var template = template ? template : 'teaser' ;
 
       $.each(sculprit.items, function (index, item) {
         items.push(item.render(template));
       });
 
-      return render(items, 'list');
-
+      return render({items: items}, 'list');
     }
 
   };
