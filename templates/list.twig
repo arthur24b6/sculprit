@@ -1,3 +1,6 @@
+{# All lists of content will be passed through this template- modifications here
+will impact every output. By default content will be rendered through the teaser
+template. #}
 <ul class="list">
 
 {% for item in items %}
@@ -8,7 +11,7 @@
     {% set classes = classes|merge([cycle(['odd', 'even'], loop.index0)]) %}
 
     <li class="{{ classes|join(" ") }}">
-   {{ item }}
-  </li>
+      {{ item }}
+    </li>
 {% endfor %}
 </ul>

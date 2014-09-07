@@ -1,6 +1,6 @@
-require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie, render, Sculprit, parser) {
+require(["jquery", "routie", "parser"], function($, routie, parser) {
 
-  // Initial page load, render all sculprit content.
+  // Initial page load, render all sculprit content on the main page.
   $('body').parser();
 
   /* *********************************************** */
@@ -8,27 +8,12 @@ require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie
   /* *********************************************** */
 
   routie('', function() {
-    $('#content').parser(render({}, 'home'));
+     $('#content').parser('home');
   });
 
   routie(':type/:id', function(type, id) {
-
-    // Ensure that Sculprit exists.
-    if (typeof content == 'undefined') {
-      var content = Sculprit();
-    }
-
-     var output = render(content.findItemBy('id', id), 'detail');
-     console.log(output);
-    // $.parser(output);
-
-    // $('#content').html(content.findItemBy('id', id).render('detail'));
-
+     $('#content').parser(id);
   });
 
-
 });
-
-
-
 

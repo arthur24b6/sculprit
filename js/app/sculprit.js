@@ -108,6 +108,17 @@ function Sculprit(mode) {
     });
   };
 
+  /**
+   * Is this a template?
+   *
+   * @param string string
+   * @returns {Boolean}
+   */
+  sculprit.isTemplate = function (string) {
+    if ($.inArray(string, sculprit.getTemplateList()) !== -1) {
+      return true;
+    }
+  }
 
   /**
    * Check item attributes to see if variable is an attribute.
