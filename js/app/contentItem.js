@@ -7,7 +7,7 @@
  *
  */
 
-define(['jquery', 'yamlDown', 'render'], function($, yamlDown, render) {
+define(['jquery', 'yamlDown', 'render', 'config'], function($, yamlDown, render, config) {
 
 
     /**
@@ -69,10 +69,15 @@ define(['jquery', 'yamlDown', 'render'], function($, yamlDown, render) {
         console.log(data);
         */
 
+        var url = item.path;
+        if (typeof config.debug != 'undefined') {
+          url = url + '?nocache=' + (new Date()).getTime();
+        }
+
         // Use async loading to ensure that item is fully populated before it is
         // returned.
         // @TODO use require(['text!... or consider $.when(....).done(....)
-        return $.ajax({url: item.path, async: false, dataType: 'html'})
+        return $.ajax({url: url, async: false, dataType: 'html'})
           .done(function(data) {
             $.each(yamlDown(data), function(key, value) {
                item[key] = value;

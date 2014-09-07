@@ -6,13 +6,13 @@
  * @TODO ensure that a Sculprit has already been enstantiated.
  *
  * An html element should implement this system in the following way:
- * <div class="sculprit post"></div>
+ * <div data-sculprit="post"></div>
  * Which will render a single post item through the post.twig template.
  *
- * <div class="sculprit posts"></div>
+ * <div data-sculprit=" posts"></div>
  * Will render 10 post items through the teaser.twig and then through list.twig
  *
- * <div class="sculprit posts--articles five"></div>
+ * <div data-sculprit="posts--articles five"></div>
  * Will render the first five post and article items through teaser.twig and
  * then through list.twig.
  */
@@ -54,10 +54,10 @@ define(["jquery", "sculprit", "render", "numberString"], function($, Sculprit, r
     }
 
     // @TODO this selector should be definable.
-    $('.sculprit', container).each(function() {
+    $('[data-sculprit]', container).each(function() {
 
       // Get all of the arguments and remove the identifier.
-      var arguments = $.trim($(this).attr('class')).replace('sculprit', '');
+      var arguments = $.trim($(this).attr('data-sculprit'));
       // Create an array and filter out any empty items.
       arguments = arguments.split(/\s+/).filter(function(n){ return n != ''; });
 
@@ -130,7 +130,7 @@ define(["jquery", "sculprit", "render", "numberString"], function($, Sculprit, r
       });
 
 
-      console.log('Element class: ' + $(this).attr('class'));
+      console.log('Element class: ' + $(this).attr('data-sculprit'));
       console.log('Item type: ' + types +'. Filtered by: ' + filters +'. Limit to: ' + limit +'. Rendered with: ' + template + '.');
       console.log('Content items: ');
       console.log(content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit)).items;

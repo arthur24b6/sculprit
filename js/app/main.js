@@ -1,6 +1,5 @@
 require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie, render, Sculprit, parser) {
 
-
   // Initial page load, render all sculprit content.
   parser($('body'));
 
@@ -19,7 +18,11 @@ require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie
       var content = Sculprit();
     }
 
-    $('#content').html(content.findItemBy('id', id).render('detail'));
+     var output = render(content.findItemBy('id', id), 'detail');
+     console.log(output);
+     parser(output);
+
+    // $('#content').html(content.findItemBy('id', id).render('detail'));
 
   });
 
