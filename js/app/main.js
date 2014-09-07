@@ -1,14 +1,14 @@
 require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie, render, Sculprit, parser) {
 
   // Initial page load, render all sculprit content.
-  parser($('body'));
+  $('body').parser();
 
   /* *********************************************** */
   /* Application routing                             */
   /* *********************************************** */
 
   routie('', function() {
-    parser(render({}, 'home'));
+    $('#content').parser(render({}, 'home'));
   });
 
   routie(':type/:id', function(type, id) {
@@ -20,7 +20,7 @@ require(["jquery", "routie", 'render', "sculprit", "parser"], function($, routie
 
      var output = render(content.findItemBy('id', id), 'detail');
      console.log(output);
-     parser(output);
+    // $.parser(output);
 
     // $('#content').html(content.findItemBy('id', id).render('detail'));
 
