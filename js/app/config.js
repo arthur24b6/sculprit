@@ -10,6 +10,7 @@ define('config', function() {
     baseURL: baseURL,
     content_directory: baseURL + 'content/',
     template_directory: baseURL + 'templates/',
+    template_cache: false,
     debug: true,
     contentFileExtension: 'md'
   };

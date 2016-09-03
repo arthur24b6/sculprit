@@ -38,7 +38,7 @@ define(['jquery', 'twig', 'config'], function ($, Twig, config) {
   function loadTemplate (template) {
     if (typeof templates[template] == 'undefined' || templates[template] === null) {
       var url = config.template_directory + template + ".twig";
-      if (typeof config.debug != 'undefined') {
+      if (config.template_cache != true) {
         url = url + '?nocache=' + (new Date()).getTime();
       }
       templates[template] = Twig.twig({
@@ -60,7 +60,7 @@ define(['jquery', 'twig', 'config'], function ($, Twig, config) {
    * @returns string
    */
   return function (data, template) {
-   
+
     var template = typeof template == 'undefined' ? data.type : template;
     loadTemplate(template);
 
