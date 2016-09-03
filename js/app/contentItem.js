@@ -70,7 +70,7 @@ define(['jquery', 'yamlDown', 'render', 'config'], function($, yamlDown, render,
         */
 
         var url = item.path;
-        if (typeof config.debug != 'undefined') {
+        if (config.content_cache !== true) {
           url = url + '?nocache=' + (new Date()).getTime();
         }
 
