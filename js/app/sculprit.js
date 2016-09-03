@@ -7,7 +7,7 @@
  */
 
 
-define(["jquery", "twig", "jsyaml", "strtotime", "yamlDown", "config", 'fileList', "render"], function($, Twig, jsyaml, strtotime, yamlDown, config, fileList, render) {
+define(["jquery", "twig", "jsyaml", "strtotime", "yamlDown", "config", 'fileList', "render", "logger"], function($, Twig, jsyaml, strtotime, yamlDown, config, fileList, render, logger) {
 
 /**
  * Content storage and manipulation.
@@ -45,7 +45,7 @@ function Sculprit(mode) {
 
 
   sculprit.init = function() {
-    console.log('Creating new sculprit');
+    logger('Creating new sculprit');
     sculprit.getItemsList();
     sculprit.getTemplateList();
     sculprit.load();
