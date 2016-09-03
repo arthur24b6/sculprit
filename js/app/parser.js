@@ -3,7 +3,7 @@
  * Provides a jQuery function to render content into a container.
  */
 
-define(["jquery", "sculprit", "render", "numberString", "config"], function($, Sculprit, render, numberString, config) {
+define(["jquery", "sculprit", "render", "numberString", "config", "logger"], function($, Sculprit, render, numberString, config, logger) {
 
   // Ensure that Sculprit exists.
   if (typeof content == 'undefined') {
@@ -13,7 +13,6 @@ define(["jquery", "sculprit", "render", "numberString", "config"], function($, S
   if (typeof config.defaultTemplate == 'undefined') {
     config.defaultTemplate = 'detail';
   }
-
 
   /**
    * Parse the DOM and add content to all items.
@@ -132,14 +131,18 @@ define(["jquery", "sculprit", "render", "numberString", "config"], function($, S
 
       });
 
-      if (typeof config.debug != 'undefined') {
-        console.log('Element class: ' + $(this).attr('data-sculprit'));
-        console.log('Item type: ' + types +'. Filtered by: ' + filters +'. Limit to: ' + limit +'. Rendered with: ' + template + '.');
-        var debug = 'Content items: ';
+      if (config.debug === true) {
+        var debug = 'Query: ' + $(this).attr('data-sculprit');
+        debug += "\nItem type: " + types +'. Filtered by: ' + filters +'. Limit to: ' + limit +'. Rendered with: ' + template + '.';
+        debug += "\nContent items: ";
+
         $.each(content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit).items, function(key, item) {
           debug += item.path +  '';
         });
-        console.log(debug);
+
+        logger(debug);
+
+        $(this).attr('data-sculprit-rendered', debug);
       }
 
       var output = content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit).render(template);
