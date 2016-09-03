@@ -33,9 +33,10 @@ requirejs.config({
       "render": "../app/render",
       "numberString": "../app/numberString",
       "parser": "../app/parser",
+      "logger": "../app/logger",
 
-      // Prevent caching.
-      urlArgs: "?q=A&bust=" + (new Date()).getTime()
+      // Prevent caching. Remove this if your are not developing.
+      urlArgs: "?q=A"+ Math.random() + "&bust=" + (new Date()).getTime()
     }
 });
 
