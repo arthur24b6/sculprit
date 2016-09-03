@@ -106,14 +106,11 @@ define(["jquery", "sculprit", "render", "numberString", "config", "logger"], fun
           }
         }
 
-
-        // Check to see if this is a limit argument. Assumes that no CSS classes are
-        // using number names. Overrides default limits.
+        // Check to see if this is a limit argument. Overrides default limits.
         if (numberString(argument) && ! limit ) {
           limit = numberString(argument);
           return true;
         }
-
 
         // Check to see if this is a request for a template type. The item type(s)
         // must be set before the template value is set.
@@ -137,7 +134,7 @@ define(["jquery", "sculprit", "render", "numberString", "config", "logger"], fun
         debug += "\nContent items: ";
 
         $.each(content.findItemsBy('type', types).filter(filters).orderBy('sortDate').limit(limit).items, function(key, item) {
-          debug += item.path +  '';
+          debug += item.path +  " \n";
         });
 
         logger(debug);
