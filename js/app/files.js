@@ -26,7 +26,7 @@ define(['jquery', 'config'], function ($, config) {
     }
 
     return {
-      fileList : function(url, extension, callback) {
+      getFileList : function(url, extension, callback) {
         var items = [];
         var files = [];
 
@@ -39,13 +39,7 @@ define(['jquery', 'config'], function ($, config) {
                 var path = url + $(this).attr('href');
                 // Does the file extension match the content type?
                 if (extensionsMatch(path, extension)) {
-                  // Get the modified date. Apache list the entry like this:
-                  // <a href="2013-11-30-twig.md">2013-11-30-twig.md</a>      02-Dec-2013 10:20  182
-                  var date = $(this)[0].nextSibling.nodeValue;
-                  date = $.trim(date);
-                  // Now trim the file size off the end of it.
-                  date = $.trim(date.replace(/[\s\S][0-9]*$/, ''));
-                  files.push({id: createAnId(path), path: path, date: date});
+                  files.push({id: createAnId(path), path: path});
                 }
               });
               callback(files);
@@ -56,19 +50,19 @@ define(['jquery', 'config'], function ($, config) {
         // @TODO abstract the github base url here
         function getFilesGithub(url, extension) {
           var base = "https://api.github.com/repos/arthur24b6/sculprit/contents";
-          url = base + url;
+          url = base + url.replace(/\/$/, "");
           $.ajax({url: url, async: false, dataType: 'json'})
             .done(function(data) {
               $.each(data, function(key, val) {
                 if (extensionsMatch(val.path, extension)) {
-                  files.push({id: createAnId(val.path), path: val.download_url, date: ''});
+                  files.push({id: createAnId(val.path), path: val.download_url});
                 }
               });
               callback(files);
             });
         }
 
-      return getFilesApache(url, config.contentFileExtension, callback);
+      return getFilesApache(url, extension, callback);
     },
 
     getFile : function (url, callback) {

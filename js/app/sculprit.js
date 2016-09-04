@@ -82,9 +82,9 @@ function Sculprit(mode) {
         config.contentFileExtension = 'md';
       }
 
-      var list = files.fileList(settings('content_directory'), config.contentFileExtension, function(files) {
+      var list = files.getFileList(settings('content_directory'), config.contentFileExtension, function(files) {
         $.each(files, function(key, value) {
-          var item = new contentItem({id: value.id, path: value.path, date: value.date});
+          var item = new contentItem({id: value.id, path: value.path});
           test.items.push(item);
         });
 
@@ -103,18 +103,13 @@ function Sculprit(mode) {
       return sculprit.templates;
     }
     var self = this;
-    $.ajax({url: settings('template_directory'), async: false})
-    .done(function(data) {
-      var listing = $(data).find('a');
-      $(listing).each(function() {
-        if ($(this).attr('href').slice(-4) == 'twig') {
-          // @TODO do something with the raw path?
-          var path = settings('template_directory') + '/' + $(this).attr('href');
-          // Remove the .twig extension.
-          self.templates.push($(this).attr('href').slice(0, -5));
-        }
+
+    files.getFileList(settings('template_directory'), 'twig', function(list) {
+      $.each(list, function(key, val) {
+        self.templates.push(val.id);
       });
     });
+
   };
 
   /**

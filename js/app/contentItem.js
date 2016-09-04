@@ -63,7 +63,6 @@ define(['jquery', 'yamlDown', 'render', 'config', 'files'], function($, yamlDown
           url = url + '?nocache=' + (new Date()).getTime();
         }
 
-console.log(files);
         return files.getFile(url, function(data) {
           $.each(yamlDown(data), function(key, value) {
              item[key] = value;
@@ -71,19 +70,6 @@ console.log(files);
           item.url = createAURI(item);
           return item;
         });
-
-        //
-        // // Use async loading to ensure that item is fully populated before it is
-        // // returned.
-        // // @TODO use require(['text!... or consider $.when(....).done(....)
-        // return $.ajax({url: url, async: false, dataType: 'html'})
-        //   .done(function(data) {
-        //     $.each(yamlDown(data), function(key, value) {
-        //        item[key] = value;
-        //     });
-        //     item.url = createAURI(item);
-        //     return item;
-        // });
 
       } ;
 
