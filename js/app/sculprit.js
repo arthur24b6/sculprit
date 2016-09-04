@@ -7,7 +7,7 @@
  */
 
 
-define(["jquery", "twig", "jsyaml", "strtotime", "yamlDown", "config", 'fileList', "render", "logger"], function($, Twig, jsyaml, strtotime, yamlDown, config, fileList, render, logger) {
+define(["jquery", "twig", "jsyaml", "strtotime", "yamlDown", "config", 'files', "render", "logger", "contentItem"], function($, Twig, jsyaml, strtotime, yamlDown, config, files, render, logger, contentItem) {
 
 /**
  * Content storage and manipulation.
@@ -69,17 +69,26 @@ function Sculprit(mode) {
 
   /**
    * Query an Apache server to get a list of content.
-   *
-   * @TODO make this extensible to support other data sources.
    * @TODO support sub directories.
+   *
    * @returns {undefined}
    */
   sculprit.getItemsList = function() {
       var items = {};
       var test = sculprit;
-      var list = fileList(settings('content_directory'), function(items) {
-          test.items = items;
-          return test;
+
+      // The default type of supported content is markdown.
+      if (typeof config.contentFileExtension == 'undefined') {
+        config.contentFileExtension = 'md';
+      }
+
+      var list = files.fileList(settings('content_directory'), config.contentFileExtension, function(files) {
+        $.each(files, function(key, value) {
+          var item = new contentItem({id: value.id, path: value.path, date: value.date});
+          test.items.push(item);
+        });
+
+        return test;
       });
   };
 

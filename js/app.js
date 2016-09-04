@@ -27,7 +27,7 @@ requirejs.config({
       "sculprit" : "../app/sculprit",
       "config": "../app/config",
       "strtotime": "../app/strtotime",
-      "fileList": "../app/fileList",
+      "files": "../app/files",
       "yamlDown": "../app/yamlDown",
       "contentItem": "../app/contentItem",
       "render": "../app/render",
