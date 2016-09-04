@@ -7,8 +7,7 @@
  *
  */
 
-define(['jquery', 'yamlDown', 'render', 'config'], function($, yamlDown, render, config) {
-
+define(['jquery', 'yamlDown', 'render', 'config', 'files'], function($, yamlDown, render, config, files) {
 
     /**
      * Utility function to map a content file to a URL.
@@ -58,33 +57,33 @@ define(['jquery', 'yamlDown', 'render', 'config'], function($, yamlDown, render,
           return;
         }
         var item = this;
-        /*
-        return require(['text!../../content/2013-11-30-javascript-router.md', 'yamlDown'], function(item, yamlDown) {
-            $.each(yamlDown(item), function(key, value) {
-                item[key] = value;
-            });
-            return item;
-        });
-
-        console.log(data);
-        */
 
         var url = item.path;
         if (config.content_cache !== true) {
           url = url + '?nocache=' + (new Date()).getTime();
         }
 
-        // Use async loading to ensure that item is fully populated before it is
-        // returned.
-        // @TODO use require(['text!... or consider $.when(....).done(....)
-        return $.ajax({url: url, async: false, dataType: 'html'})
-          .done(function(data) {
-            $.each(yamlDown(data), function(key, value) {
-               item[key] = value;
-            });
-            item.url = createAURI(item);
-            return item;
+console.log(files);
+        return files.getFile(url, function(data) {
+          $.each(yamlDown(data), function(key, value) {
+             item[key] = value;
+          });
+          item.url = createAURI(item);
+          return item;
         });
+
+        //
+        // // Use async loading to ensure that item is fully populated before it is
+        // // returned.
+        // // @TODO use require(['text!... or consider $.when(....).done(....)
+        // return $.ajax({url: url, async: false, dataType: 'html'})
+        //   .done(function(data) {
+        //     $.each(yamlDown(data), function(key, value) {
+        //        item[key] = value;
+        //     });
+        //     item.url = createAURI(item);
+        //     return item;
+        // });
 
       } ;
 

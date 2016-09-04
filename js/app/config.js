@@ -15,6 +15,9 @@ define('config', function() {
     // Allow the browser to cache template files. Off during development.
     template_cache: false,
     debug: true,
+    // File extension to filter for for content. Note that the system only
+    // supports markdown formatting so it's unlikely that this should ever be
+    // changed.
     contentFileExtension: 'md'
   };
 });
