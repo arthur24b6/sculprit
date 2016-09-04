@@ -51,6 +51,7 @@ define(['jquery', 'config'], function ($, config) {
         function getFilesGithub(url, extension) {
           var base = "https://api.github.com/repos/arthur24b6/sculprit/contents";
           url = base + url.replace(/\/$/, "");
+          console.log(url);
           $.ajax({url: url, async: false, dataType: 'json'})
             .done(function(data) {
               $.each(data, function(key, val) {
@@ -61,8 +62,8 @@ define(['jquery', 'config'], function ($, config) {
               callback(files);
             });
         }
-
-      return getFilesApache(url, extension, callback);
+console.log('Are we logging');
+      return getFilesGithub(url, extension, callback);
     },
 
     getFile : function (url, callback) {
